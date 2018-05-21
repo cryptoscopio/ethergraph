@@ -42,9 +42,10 @@ class CSVAddressView(CSVView):
         return '%s-%s' % (address, datetime.datetime.now())
 
     def rows(self, request, address):
+        address = address.lower()
         try:
-            models.Transaction.fetch(address.lower())
-            models.InternalTransaction.fetch(address.lower())
+            models.Transaction.fetch(address)
+            models.InternalTransaction.fetch(address)
         except Exception as e:
             # Never catch database errors, they invalidate transactions
             if isinstance(e, DatabaseError):
