@@ -1,11 +1,12 @@
 import csv
 import datetime
 
+from django.db import DatabaseError
 from django.http import StreamingHttpResponse
 from django.shortcuts import render
 from django.views import View
 
-from . import fetcher, utils
+from . import fetcher, models, utils
 
 
 class Echo(object):
@@ -41,12 +42,23 @@ class CSVAddressView(CSVView):
         return '%s-%s' % (address, datetime.datetime.now())
 
     def rows(self, request, address):
-        transactions = fetcher.get_transactions(address)
-        internal = fetcher.get_internal_transactions(address)
+        try:
+            models.Transaction.fetch(address.lower())
+            models.InternalTransaction.fetch(address.lower())
+        except Exception as e:
+            # Never catch database errors, they invalidate transactions
+            if isinstance(e, DatabaseError):
+                raise
+            # If fetching failed, we should still output what data we have
+            raise
+        transactions = models.Transaction.objects.filter(address=address)\
+            .order_by('timestamp').values_list('timestamp', 'value')
+        internal = models.InternalTransaction.objects.filter(address=address)\
+            .order_by('timestamp').values_list('timestamp', 'value')
         for timestamp, incoming, outgoing in utils.collate(transactions, internal):
             yield (
                 datetime.datetime.fromtimestamp(timestamp),
                 utils.wei_to_eth(incoming),
-                utils.wei_to_eth(outgoing),
-                utils.wei_to_eth(incoming - outgoing),
+                utils.wei_to_eth(abs(outgoing)),
+                utils.wei_to_eth(incoming + outgoing),
             )

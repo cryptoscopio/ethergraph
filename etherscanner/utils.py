@@ -23,8 +23,8 @@ def collate(*args, interval=600, value_type=int):
             aggregate[rounded] += value
         aggregates.append(aggregate)
     # Determine earliest and latest timestamps across all the interators
-    start_timestamp = min(min(d.keys()) for d in aggregates)
-    end_timestamp = max(max(d.keys()) for d in aggregates) + interval
+    start_timestamp = min([min(d.keys()) for d in aggregates if d.keys()] or [0])
+    end_timestamp = max([max(d.keys()) for d in aggregates if d.keys()] or [0]) + interval
     # Maintain the cumulative total for each iterator in `cumulative`
     cumulative = [value_type()] * len(args)
     for index in range(start_timestamp, end_timestamp, interval):
