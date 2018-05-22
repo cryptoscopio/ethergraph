@@ -16,7 +16,7 @@ class Transaction(models.Model):
 
     @classmethod
     def fetch(cls, address):
-        last_block = cls.objects.aggregate(
+        last_block = cls.objects.filter(address=address).aggregate(
             models.Max('block_number')
         )['block_number__max'] or -1
         for transaction in fetcher.get_transactions(address, last_block + 1):
@@ -25,7 +25,7 @@ class Transaction(models.Model):
 
 class InternalTransaction(models.Model):
     hash = models.CharField(max_length=66, db_index=True)
-    trace_id = models.IntegerField(default=0)
+    trace_id = models.CharField(max_length=66)
     address = models.CharField(max_length=42, db_index=True)
     block_number = models.IntegerField()
     timestamp = models.IntegerField()
@@ -37,7 +37,7 @@ class InternalTransaction(models.Model):
 
     @classmethod
     def fetch(cls, address):
-        last_block = cls.objects.aggregate(
+        last_block = cls.objects.filter(address=address).aggregate(
             models.Max('block_number')
         )['block_number__max'] or -1
         for transaction in fetcher.get_internal_transactions(address, last_block + 1):
