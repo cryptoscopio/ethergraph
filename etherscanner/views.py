@@ -1,6 +1,7 @@
 import csv
 import datetime
 
+from django.conf import settings
 from django.db import DatabaseError
 from django.http import StreamingHttpResponse
 from django.shortcuts import render
@@ -8,6 +9,8 @@ from django.views import View
 
 from . import fetcher, models, utils
 
+
+to_eth = utils.gwei_to_eth if settings.ETHERSCAN_USE_GWEI else utils.wei_to_eth
 
 class Echo(object):
     """Helper class for writing csv into a streaming response"""
@@ -59,7 +62,7 @@ class CSVAddressView(CSVView):
         for timestamp, incoming, outgoing in utils.collate(transactions, internal):
             yield (
                 datetime.datetime.fromtimestamp(timestamp),
-                utils.wei_to_eth(incoming),
-                utils.wei_to_eth(abs(outgoing)),
-                utils.wei_to_eth(incoming + outgoing),
+                to_eth(incoming),
+                to_eth(abs(outgoing)),
+                to_eth(incoming + outgoing),
             )

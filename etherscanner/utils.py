@@ -37,3 +37,7 @@ def collate(*args, interval=600, value_type=int):
 def wei_to_eth(value):
     """Convert wei value into ETH value as a Decimal"""
     return Decimal(value) / Decimal('1000000000000000000')
+
+def gwei_to_eth(value):
+    """Convert gwei value into ETH value as a Decimal"""
+    return Decimal(value) / Decimal('1000000000')

@@ -8,6 +8,12 @@ from django.conf import settings
 API_URL = 'http://api.etherscan.io/api'
 
 
+if settings.ETHERSCAN_USE_GWEI:
+    convert_value = lambda x: x // 1000000000
+else:
+    convert_value = lambda x: x # no-op
+
+
 def _transactions(**params):
     """
     A generic function to return transactions while handling pagination. The
@@ -52,7 +58,8 @@ def get_transactions(address, startblock=0):
                 'hash': transaction['hash'],
                 'block_number': transaction['blockNumber'],
                 'timestamp': int(transaction['timeStamp']),
-                'value': int(transaction['value']) * (1 if incoming else -1),
+                'value': convert_value(int(transaction['value'])) \
+                    * (1 if incoming else -1),
                 'gas_price': int(transaction['gasPrice']),
                 'gas_used': int(transaction['gasUsed']),
                 'function': transaction['input'][:10],
@@ -71,6 +78,7 @@ def get_internal_transactions(address, startblock=0):
             'trace_id': transaction['traceId'],
             'block_number': transaction['blockNumber'],
             'timestamp': int(transaction['timeStamp']),
-            'value': int(transaction['value']) * (1 if incoming else -1),
+            'value': convert_value(int(transaction['value'])) \
+                * (1 if incoming else -1),
             'other_address': transaction['from'] if incoming else transaction['to'],
         }

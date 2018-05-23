@@ -123,3 +123,4 @@ STATIC_URL = '/static/'
 
 # Etherscanner
 ETHERSCAN_API_KEY = os.environ.get('ETHERSCAN_API_KEY')
+ETHERSCAN_USE_GWEI = bool(os.environ.get('ETHERSCAN_USE_GWEI'))
